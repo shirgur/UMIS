@@ -151,14 +151,14 @@ for epoch in range(args.epochs):
         one_opt_seg = seg[image_force < 0]
         zero_opt = image_force[image_force > 0]
         zero_opt_seg = seg[image_force > 0]
-        image_foce_loss = 0
+        image_force_loss = 0
         if len(one_opt) > 0:
-            image_foce_loss += torch.exp(one_opt * one_opt_seg).mean() * 0.5
+            image_force_loss += torch.exp(one_opt * one_opt_seg).mean() * 0.5
         if len(zero_opt) > 0:
-            image_foce_loss += torch.exp(- zero_opt * (1 - zero_opt_seg)).mean() * 0.5
+            image_force_loss += torch.exp(- zero_opt * (1 - zero_opt_seg)).mean() * 0.5
 
         # Compound loss
-        loss = image_foce_loss
+        loss = image_force_loss
         loss += 1e-2 * rank_loss
         loss += 1e-3 * etropy_loss
         loss += 1e-3 * var_loss
