@@ -12,6 +12,7 @@ from networks.segmentation import SegmentNet3D_Resnet
 from networks.utils import GradXYZ, norm_range
 
 from utils import Saver, TensorboardSummary
+from networks.loss_functions import euler_lagrange, level_set
 
 # args
 parser = argparse.ArgumentParser(description='PyTorch Unsupervised Vessels Segmentation')
@@ -27,6 +28,8 @@ parser.add_argument('--lmd2', type=int, default=2, metavar='N',
                     help='lambda 2')
 parser.add_argument('--range-norm', action='store_true',
                     help='range-norm')
+parser.add_argument('--loss', type=str, default='EL', metavar='N',
+                    help='Loss function')
 parser.add_argument('--train-dataset', type=str, default='VesselNN', metavar='N',
                     help='Training dataset name')
 parser.add_argument('--train-images-path', type=str, default='/path/to/VesselNN/train/images', metavar='N',
@@ -128,42 +131,13 @@ for epoch in range(args.epochs):
         seg = mp3d(seg)
         seg = mp3d(seg, True)
 
-        # Image force
-        image_force = (args.lmd1 * (data - c0).pow(2) - args.lmd2 * (data - c1).pow(2)) * grad_seg
-
-        # Reconstruction loss
-        rec_loss = F.mse_loss(rec, data) + grad_rec.mean()
-
-        # Rank loss
-        rank_loss = torch.exp(c1 - c0).mean()
-
-        # Variance loss
-        seg_mean = area / (seg.shape[1] * seg.shape[2] * seg.shape[3] * seg.shape[4])
-        seg_size = seg.shape[1] * seg.shape[2] * seg.shape[3] * seg.shape[4]
-        var_loss = (seg.pow(2).sum(dim=dimsum) / seg_size) - (seg.sum(dim=dimsum) / seg_size).pow(2)
-        var_loss = torch.exp(var_loss).mean()
-
-        # Entropy loss
-        etropy_loss = (- seg * (seg + 1e-5).log()).mean()
-
-        # Image force loss
-        one_opt = image_force[image_force < 0]
-        one_opt_seg = seg[image_force < 0]
-        zero_opt = image_force[image_force > 0]
-        zero_opt_seg = seg[image_force > 0]
-        image_foce_loss = 0
-        if len(one_opt) > 0:
-            image_foce_loss += torch.exp(one_opt * one_opt_seg).mean() * 0.5
-        if len(zero_opt) > 0:
-            image_foce_loss += torch.exp(- zero_opt * (1 - zero_opt_seg)).mean() * 0.5
-
-        # Compound loss
-        loss = image_foce_loss
-        loss += 1e-2 * rank_loss
-        loss += 1e-3 * etropy_loss
-        loss += 1e-3 * var_loss
-        loss += 1e-6 * rec_loss
-        loss += 5e-8 * area.mean()
+        # loss function
+        if args.loss == 'EL':
+            loss = euler_lagrange(data, seg, area, c0, c1, rec, grad_seg, grad_rec, args)
+        elif args.loss == 'LS':
+            loss = level_set(data, seg, area, c0, c1)
+        else:
+            raise Exception('Unsupported loss function')
 
         # Optimize
         optimizer.zero_grad()
