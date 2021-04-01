@@ -39,12 +39,12 @@ def euler_lagrange(data, seg, area, c0, c1, rec, grad_seg, grad_rec, args):
     loss += 1e-3 * etropy_loss
     loss += 1e-3 * var_loss
     loss += 1e-6 * rec_loss
-    loss += 5e-8 * area.mean()
+    loss += args.lmd_area * area.mean()
 
     return loss
 
 
-def level_set(data, seg, area, c0, c1):
+def level_set(data, seg, area, c0, c1, args):
     dimsum = list(range(1, len(data.shape)))
 
     # Level-set loss
@@ -57,6 +57,6 @@ def level_set(data, seg, area, c0, c1):
     loss = 1e-2 * loss_ls.sum(dim=dimsum).mean()
     loss += 1e3 * rank_loss
     loss += c0.mean()
-    loss += 5e-8 * area.mean()
+    loss += args.lmd_area * area.mean()
 
     return loss

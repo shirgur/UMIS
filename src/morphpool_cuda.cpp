@@ -1,33 +1,33 @@
-#include <torch/torch.h>
+#include <torch/extension.h>
 
 #include <vector>
 
 // CUDA forward declarations
 
-std::vector<at::Tensor> morphpool_cuda_forward(
-    at::Tensor input,
-    at::Tensor mask,
+std::vector<torch::Tensor> morphpool_cuda_forward(
+    torch::Tensor input,
+    torch::Tensor mask,
     int num_morph,
     int kernel_size);
 
-std::vector<at::Tensor> morphpool_cuda_backward(
-    at::Tensor grad,
-    at::Tensor input,
-    at::Tensor mask,
-    at::Tensor input_indices,
-    at::Tensor output_fwd,
+std::vector<torch::Tensor> morphpool_cuda_backward(
+    torch::Tensor grad,
+    torch::Tensor input,
+    torch::Tensor mask,
+    torch::Tensor input_indices,
+    torch::Tensor output_fwd,
     int num_morph,
     int kernel_size);
 
 // C++ interface
-
-#define CHECK_CUDA(x) AT_ASSERT(x.type().is_cuda())
-#define CHECK_CONTIGUOUS(x) AT_ASSERT(x.is_contiguous())
+#define CHECK_CUDA(x) TORCH_CHECK(x.is_cuda(), #x " must be a CUDA tensor")
+#define CHECK_CONTIGUOUS(x) TORCH_CHECK(x.is_contiguous(), #x " must be contiguous")
 #define CHECK_INPUT(x) CHECK_CUDA(x); CHECK_CONTIGUOUS(x)
 
-std::vector<at::Tensor> morphpool_forward(
-    at::Tensor input,
-    at::Tensor mask,
+
+std::vector<torch::Tensor> morphpool_forward(
+    torch::Tensor input,
+    torch::Tensor mask,
     int num_morph,
     int kernel_size) {
   CHECK_INPUT(input);
@@ -36,12 +36,12 @@ std::vector<at::Tensor> morphpool_forward(
   return morphpool_cuda_forward(input, mask, num_morph, kernel_size);
 }
 
-std::vector<at::Tensor> morphpool_backward(
-    at::Tensor grad,
-    at::Tensor input,
-    at::Tensor mask,
-    at::Tensor input_indices,
-    at::Tensor output_fwd,
+std::vector<torch::Tensor> morphpool_backward(
+    torch::Tensor grad,
+    torch::Tensor input,
+    torch::Tensor mask,
+    torch::Tensor input_indices,
+    torch::Tensor output_fwd,
     int num_morph,
     int kernel_size) {
   CHECK_INPUT(grad);

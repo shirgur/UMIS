@@ -1,5 +1,4 @@
 import torch
-import torch.nn.functional as F
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 import argparse
@@ -28,7 +27,7 @@ parser.add_argument('--lmd2', type=int, default=2, metavar='N',
                     help='lambda 2')
 parser.add_argument('--range-norm', action='store_true',
                     help='range-norm')
-parser.add_argument('--loss', type=str, default='EL', metavar='N',
+parser.add_argument('--loss', type=str, default='LS', metavar='N',
                     help='Loss function')
 parser.add_argument('--train-dataset', type=str, default='VesselNN', metavar='N',
                     help='Training dataset name')
