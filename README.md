@@ -3,7 +3,7 @@ Official PyTorch implementation of "Unsupervised Microvascular Image Segmentatio
 
 ## Prerequisites
 - Python 3.6
-- Pytorch 0.4
+- Pytorch +1.4
 - Numpy
 - Scipy
 - OpenCV
@@ -16,7 +16,7 @@ Official PyTorch implementation of "Unsupervised Microvascular Image Segmentatio
 ### Morphological Pooling Layer
 In order to build the Morphological Pooling layer on your own machine, run the following line
 ```
-python morphologicalpool/setup.py install
+python src/setup.py install
 ```
 
 ## Train
